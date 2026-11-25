@@ -1,0 +1,1057 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="robots" content="noindex, nofollow">
+<meta name="description" content="Опросник минут на 10: что тебе ближе в работе с нейросетями. Правильных ответов нет.">
+<meta property="og:type" content="website">
+<meta property="og:title" content="Примерка нейросетей">
+<meta property="og:description" content="Опросник минут на 10: что тебе ближе в работе с нейросетями. Правильных ответов нет.">
+<title>Примерка нейросетей</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bona+Nova:wght@400;700&family=Onest:wght@400;500;600&display=swap">
+<style>
+/* Раскладка: одна колонка по левому краю (до 34rem), сверху закреплена «сантиметровая лента»
+   с делением на каждый вопрос, на экране один вопрос. Смелое место одно: лента. */
+:root {
+  --bg: #EEF0F5;        /* холодная меловая бумага */
+  --surface: #FFFFFF;
+  --ink: #1B2037;       /* тёмно-синие чернила */
+  --muted: #5A6079;
+  --line: #CBD0DF;
+  --tape: #FFD23F;      /* жёлтая сантиметровая лента */
+  --tape-ink: #2B2400;
+  --chalk: #B5305A;     /* портновский мел: мелкие пометки */
+  --pick-bg: #1B2037;
+  --pick-fg: #FFFFFF;
+  --font-display: 'Bona Nova', Georgia, 'Times New Roman', serif;
+  --font-ui: 'Onest', system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #151826; --surface: #1F2336; --ink: #ECEEF6; --muted: #A2A9C0; --line: #363C55;
+    --tape: #FFD23F; --tape-ink: #2B2400; --chalk: #F0809E; --pick-bg: #ECEEF6; --pick-fg: #151826;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #151826; --surface: #1F2336; --ink: #ECEEF6; --muted: #A2A9C0; --line: #363C55;
+  --tape: #FFD23F; --tape-ink: #2B2400; --chalk: #F0809E; --pick-bg: #ECEEF6; --pick-fg: #151826;
+  color-scheme: dark;
+}
+
+*, *::before, *::after { box-sizing: border-box; }
+[hidden] { display: none !important; }
+html { -webkit-text-size-adjust: 100%; }
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--ink);
+  font-family: var(--font-ui);
+  font-size: 1.0625rem;
+  line-height: 1.5;
+}
+body::before {
+  content: ""; position: fixed; inset: 0 0 auto; z-index: 10;
+  height: env(safe-area-inset-top, 0px); background: var(--bg);
+}
+button, input, textarea { font: inherit; color: inherit; }
+:focus-visible { outline: 3px solid var(--chalk); outline-offset: 2px; }
+
+.app {
+  max-width: 34rem;
+  margin: 0 auto;
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+  padding-block: 0 3rem;
+}
+
+/* ---------- Шапка с лентой ---------- */
+.top {
+  position: sticky; top: env(safe-area-inset-top, 0px); z-index: 5;
+  background: var(--bg);
+  padding-block: 0.75rem 0.875rem;
+  display: flex; flex-direction: column; gap: 0.5rem;
+}
+.top-row { display: flex; align-items: center; justify-content: space-between; gap: 1rem; min-height: 2.25rem; }
+.back {
+  border: 0; background: none; padding: 0.375rem 0.5rem 0.375rem 0; cursor: pointer;
+  color: var(--muted); font-weight: 500; font-size: 0.9375rem;
+}
+.back:hover { color: var(--ink); }
+.count { color: var(--muted); font-size: 0.875rem; font-variant-numeric: tabular-nums; }
+
+.tape { position: relative; height: 1.625rem; border-radius: 3px; overflow: hidden; background: var(--surface); }
+.tape-layer { position: absolute; inset: 0; }
+.tape-rest { color: var(--line); }
+.tape-rest b { color: var(--muted); }
+.tape-fill {
+  background: var(--tape); color: var(--tape-ink);
+  clip-path: inset(0 calc(100% - var(--p, 0) * 1%) 0 0);
+  transition: clip-path 0.35s ease;
+}
+.tape-layer i {            /* деление: одно на вопрос */
+  position: absolute; bottom: 0; width: 1px; height: 0.375rem; background: currentColor;
+}
+.tape-layer i.five { height: 0.6875rem; width: 1.5px; }
+.tape-layer b {            /* цифра на каждом пятом */
+  position: absolute; top: 0.125rem; transform: translateX(-50%);
+  font-size: 0.625rem; line-height: 1; font-weight: 600; font-variant-numeric: tabular-nums;
+}
+
+/* ---------- Сцена ---------- */
+.stage { padding-block: 1.25rem 0; }
+.screen { display: flex; flex-direction: column; gap: 1.25rem; }
+.screen.fwd { animation: from-right 0.26s ease both; }
+.screen.back-dir { animation: from-left 0.26s ease both; }
+@keyframes from-right { from { opacity: 0; transform: translateX(14px); } to { opacity: 1; transform: none; } }
+@keyframes from-left  { from { opacity: 0; transform: translateX(-14px); } to { opacity: 1; transform: none; } }
+@media (prefers-reduced-motion: reduce) {
+  .screen.fwd, .screen.back-dir { animation: none; }
+  .tape-fill { transition: none; }
+}
+
+h1, h2 { font-family: var(--font-display); font-weight: 700; margin: 0; text-wrap: balance; line-height: 1.12; }
+h1 { font-size: clamp(2.25rem, 9vw, 3rem); letter-spacing: -0.01em; }
+h2 { font-size: clamp(1.875rem, 7vw, 2.375rem); }
+p { margin: 0; }
+.lead { font-size: 1.125rem; max-width: 30rem; }
+.muted { color: var(--muted); }
+.small { font-size: 0.875rem; }
+
+.part { color: var(--chalk); font-weight: 600; font-size: 0.9375rem; }
+.stitch { border: 0; border-top: 2px dashed var(--line); margin: 0; }
+
+.facts { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 0.5rem; }
+.facts li { padding-left: 1.5rem; position: relative; }
+.facts li::before {
+  content: ""; position: absolute; left: 0; top: 0.5em; width: 0.875rem; height: 0.3125rem;
+  background: var(--tape); border-radius: 1px;
+}
+
+.field { display: flex; flex-direction: column; gap: 0.375rem; }
+.field label { font-weight: 500; }
+.input, .area {
+  width: 100%; background: var(--surface); border: 1.5px solid var(--line); border-radius: 10px;
+  padding: 0.8125rem 0.9375rem; font-size: 1.0625rem;
+}
+.area { min-height: 8.5rem; resize: vertical; line-height: 1.45; display: block; }
+.input:focus, .area:focus { border-color: var(--ink); outline: none; }
+.input:focus-visible, .area:focus-visible { outline: 3px solid var(--chalk); outline-offset: 2px; }
+.counter { align-self: flex-end; font-variant-numeric: tabular-nums; }
+
+/* ---------- Вопрос ---------- */
+.q-sec { color: var(--muted); font-size: 0.875rem; font-weight: 500; }
+.q-text { font-family: var(--font-display); font-weight: 400; font-size: 1.5625rem; line-height: 1.25; margin: 0; text-wrap: pretty; }
+.q-text.long { font-size: 1.3125rem; line-height: 1.32; }
+.q-head { display: flex; flex-direction: column; gap: 0.5rem; }
+.q-prompt { font-weight: 600; }
+.opts { display: flex; flex-direction: column; gap: 0.5rem; }
+.opt {
+  display: flex; align-items: center; gap: 0.75rem; width: 100%; text-align: left; cursor: pointer;
+  background: var(--surface); border: 1.5px solid var(--line); border-radius: 10px;
+  padding: 0.8125rem 0.9375rem; min-height: 3.25rem; line-height: 1.35;
+  transition: background-color 0.12s ease, border-color 0.12s ease, color 0.12s ease;
+}
+.opt:hover { border-color: var(--ink); }
+.opt[aria-pressed="true"] { background: var(--pick-bg); border-color: var(--pick-bg); color: var(--pick-fg); }
+.opt-label { flex: 1; min-width: 0; }
+.box {                     /* флажок у вопросов с несколькими ответами */
+  flex: none; width: 1.25rem; height: 1.25rem; border-radius: 4px; border: 1.5px solid var(--muted);
+  display: grid; place-items: center;
+}
+.opt[aria-pressed="true"] .box { background: var(--tape); border-color: var(--tape); }
+.opt[aria-pressed="true"] .box::after {
+  content: ""; width: 0.625rem; height: 0.3125rem; margin-top: -0.125rem;
+  border-left: 2px solid var(--tape-ink); border-bottom: 2px solid var(--tape-ink); transform: rotate(-45deg);
+}
+.meter { flex: none; display: flex; align-items: flex-end; gap: 2px; height: 1.125rem; }
+.meter span { width: 4px; border-radius: 1px; background: var(--line); }
+.meter span.on { background: var(--tape); }
+.opt:not([aria-pressed="true"]) .meter span.on { background: var(--ink); }
+
+.actions { display: flex; flex-wrap: wrap; gap: 0.625rem; align-items: center; }
+.btn {
+  display: inline-flex; align-items: center; justify-content: center; text-align: center; text-decoration: none;
+  cursor: pointer; border-radius: 10px; border: 1.5px solid var(--pick-bg);
+  background: var(--pick-bg); color: var(--pick-fg);
+  padding: 0.8125rem 1.375rem; min-height: 3.25rem; font-weight: 600; font-size: 1.0625rem;
+}
+.btn:hover { opacity: 0.9; }
+.btn[disabled] { opacity: 0.4; cursor: default; }
+.btn.quiet { background: transparent; color: var(--ink); border-color: var(--line); font-weight: 500; }
+.btn.quiet:hover { border-color: var(--ink); opacity: 1; }
+.btn.wide { width: 100%; }
+.linkish { border: 0; background: none; padding: 0.375rem 0; cursor: pointer; color: var(--muted); text-decoration: underline; text-underline-offset: 3px; }
+.linkish:hover { color: var(--ink); }
+
+/* ---------- Финал ---------- */
+.send { display: flex; flex-direction: column; gap: 0.625rem; }
+.status { min-height: 1.5em; font-weight: 500; }
+.status.err { color: var(--chalk); }
+.msg { min-height: 9rem; font-size: 0.875rem; word-break: break-all; color: var(--muted); }
+</style>
+</head>
+<body>
+<div class="app">
+  <header class="top" id="top" hidden>
+    <div class="top-row">
+      <button type="button" class="back" id="back">Назад</button>
+      <span class="count" id="count"></span>
+    </div>
+    <div class="tape" id="tape" role="progressbar" aria-label="Пройдено вопросов" aria-valuemin="0">
+      <div class="tape-layer tape-rest" id="tape-rest"></div>
+      <div class="tape-layer tape-fill" id="tape-fill"></div>
+    </div>
+  </header>
+  <main class="stage" id="stage"></main>
+</div>
+
+<script>/* Общая часть опросника и разбора: вопросы, шкалы, кодирование ответов.
+   Подключается и в браузере (window.NS), и в Node (module.exports). */
+(function (root) {
+  'use strict';
+
+  var VERSION = 1;
+  var PREFIX = 'NS' + VERSION;
+
+  /* Семь склонностей. В основе модель Холланда (RIASEC): «художественный» тип
+     разделён на визуальный и словесный, «реалистичный» переведён в цифровую
+     «мастерскую». */
+  var TRAITS = {
+    vis:    { name: 'Визуал',     desc: 'глаз и вкус: картинка, цвет, как это выглядит' },
+    word:   { name: 'Слово',      desc: 'тексты, смыслы, точные формулировки' },
+    people: { name: 'Люди',       desc: 'общаться, объяснять, помогать' },
+    biz:    { name: 'Дело',       desc: 'продавать, договариваться, запускать своё' },
+    order:  { name: 'Порядок',    desc: 'системы и процессы, чтобы работало как часы' },
+    dig:    { name: 'Разбор',     desc: 'докопаться до сути, проверить, найти ошибку' },
+    make:   { name: 'Мастерская', desc: 'собрать, настроить, заставить технику работать' }
+  };
+
+  /* В тексте заставок {q} заменяется на «5 вопросов», {t} на «16 задач» */
+  var SECTIONS = {
+    warm: { title: 'Разминка',
+            note: '{q} о том, где ты сейчас.' },
+    like: { title: 'Что тебе по душе',
+            note: '{q} про обычную жизнь. Выбирай то, что ближе, даже если подходит несколько вариантов.' },
+    how:  { title: 'Как тебе удобнее',
+            note: '{q} о том, как тебе нравится работать. Хороших и плохих ответов здесь нет: кому-то нужна тишина, кому-то люди.' },
+    'try': { title: 'Примерка',
+            note: 'Теперь {t}, которые люди уже делают с нейросетями. Уметь это не нужно. Просто отметь, насколько хочется попробовать.' },
+    cond: { title: 'Условия',
+            note: 'Немного практики: время, техника, деньги. От этого зависит, с чего удобнее начинать.' },
+    own:  { title: 'Своими словами',
+            note: 'Последние {q}. Хватит пары предложений.' }
+  };
+
+  var SCALE = [
+    { v: 1, t: 'Совсем не хочется' },
+    { v: 2, t: 'Скорее нет' },
+    { v: 3, t: 'Не знаю' },
+    { v: 4, t: 'Интересно' },
+    { v: 5, t: 'Очень хочется попробовать' }
+  ];
+  var SCALE_PROMPT = 'Насколько хочется попробовать?';
+
+  var QUESTIONS = [
+    /* ---------- Разминка ---------- */
+    { id: 'exp', sec: 'warm', type: 'single',
+      text: 'Насколько ты уже знакома с нейросетями?',
+      options: [
+        { t: 'Ни разу не пробовала' },
+        { t: 'Пробовала пару раз из любопытства' },
+        { t: 'Иногда пользуюсь для своих задач' },
+        { t: 'Пользуюсь почти каждый день' }
+      ] },
+    { id: 'goal', sec: 'warm', type: 'single',
+      text: 'Чего ты хочешь от нейросетей в первую очередь?',
+      options: [
+        { t: 'Новую профессию, чтобы уйти с нынешней работы' },
+        { t: 'Подработку к основной работе' },
+        { t: 'Делать свою нынешнюю работу легче и лучше' },
+        { t: 'Свой проект или своё дело' },
+        { t: 'Пока просто интересно, а дальше посмотрю' }
+      ] },
+    { id: 'like_now', sec: 'warm', type: 'single',
+      text: 'Что в нынешней работе тебе нравится больше всего?',
+      options: [
+        { t: 'Общение с людьми' },
+        { t: 'Когда получается красиво и качественно' },
+        { t: 'Понятные задачи и порядок' },
+        { t: 'Самостоятельность: сама решаю, как делать' },
+        { t: 'Стабильность и деньги' },
+        { t: 'Пожалуй, ничего' }
+      ] },
+    { id: 'tired_now', sec: 'warm', type: 'single',
+      text: 'А от чего ты устаёшь сильнее всего?',
+      options: [
+        { t: 'От постоянного общения с людьми' },
+        { t: 'От однообразия' },
+        { t: 'От суеты и неразберихи' },
+        { t: 'От того, что усилий много, а платят мало' },
+        { t: 'От чужих правил и графика' },
+        { t: 'От физической нагрузки' }
+      ] },
+    { id: 'o_now', sec: 'warm', type: 'text',
+      text: 'Чем ты сейчас занимаешься? В какой сфере разбираешься изнутри?',
+      ph: 'Например: пять лет работаю администратором в стоматологии' },
+
+    /* ---------- Что тебе по душе ----------
+       Семь бытовых ситуаций по четыре варианта. Каждая склонность встречается
+       ровно в четырёх ситуациях, каждая пара склонностей сравнивается дважды
+       (сбалансированный план 7-4-2). Порядок вариантов перемешивается. */
+    { id: 'cafe', sec: 'like', type: 'single', shuffle: true,
+      text: 'Подруга открывает маленькую кофейню и просит помочь. За что возьмёшься с удовольствием?',
+      options: [
+        { t: 'Придумаю, как всё будет выглядеть: вывеска, меню, оформление', w: { vis: 1 } },
+        { t: 'Буду встречать гостей и учить персонал', w: { people: 1 } },
+        { t: 'Налажу порядок: закупки, графики, таблицу расходов', w: { order: 1 } },
+        { t: 'Сделаю страницу с меню и онлайн-заказом', w: { make: 1 } }
+      ] },
+    { id: 'evening', sec: 'like', type: 'single', shuffle: true,
+      text: 'Свободный вечер, и можно выбрать только одно занятие. Что выберешь?',
+      options: [
+        { t: 'Писать: пост, историю, длинное письмо', w: { word: 1 } },
+        { t: 'Встретиться с человеком и помочь ему разобраться с его вопросом', w: { people: 1 } },
+        { t: 'Разгадывать головоломки, искать ошибки, сверять детали', w: { dig: 1 } },
+        { t: 'Копаться в новой программе, пока она не заработает как надо', w: { make: 1 } }
+      ] },
+    { id: 'ask', sec: 'like', type: 'single', shuffle: true,
+      text: 'Знакомые просят о помощи. На какую просьбу ты откликнешься с наибольшим удовольствием?',
+      options: [
+        { t: '«Помоги выбрать и оформить, у тебя вкус»', w: { vis: 1 } },
+        { t: '«Выслушай и посоветуй, с тобой легко»', w: { people: 1 } },
+        { t: '«Поговори за меня, ты умеешь договариваться»', w: { biz: 1 } },
+        { t: '«Проверь, всё ли тут правильно, ты внимательная»', w: { dig: 1 } }
+      ] },
+    { id: 'joy', sec: 'like', type: 'single', shuffle: true,
+      text: 'Что сильнее всего радует тебя в конце рабочего дня?',
+      options: [
+        { t: 'Я хорошо заработала или заключила сделку', w: { biz: 1 } },
+        { t: 'Всё прошло по плану, ничего не потерялось', w: { order: 1 } },
+        { t: 'Я докопалась до причины и нашла ошибку', w: { dig: 1 } },
+        { t: 'Я сделала вещь, которой утром ещё не было', w: { make: 1 } }
+      ] },
+    { id: 'explain', sec: 'like', type: 'single', shuffle: true,
+      text: 'Как тебе больше нравится объяснять что-то сложное?',
+      options: [
+        { t: 'Рисую схему или показываю картинку', w: { vis: 1 } },
+        { t: 'Рассказываю историю или пример из жизни', w: { word: 1 } },
+        { t: 'Раскладываю по шагам: первое, второе, третье', w: { order: 1 } },
+        { t: 'Сначала сама докапываюсь до сути, потом говорю главное в двух фразах', w: { dig: 1 } }
+      ] },
+    { id: 'fair', sec: 'like', type: 'single', shuffle: true,
+      text: 'Вы с подругами затеяли благотворительную ярмарку. Что возьмёшь на себя?',
+      options: [
+        { t: 'Напишу объявление и посты, чтобы люди захотели прийти', w: { word: 1 } },
+        { t: 'Буду на месте: встречать гостей, помогать, отвечать на вопросы', w: { people: 1 } },
+        { t: 'Найду спонсоров и уговорю участников', w: { biz: 1 } },
+        { t: 'Составлю план, списки и расписание, чтобы ничего не забыли', w: { order: 1 } }
+      ] },
+    { id: 'gift', sec: 'like', type: 'single', shuffle: true,
+      text: 'Тебе дарят месяц свободного времени на свой проект. Что это будет?',
+      options: [
+        { t: 'Что-то красивое: серия фотографий, видео, оформление', w: { vis: 1 } },
+        { t: 'Блог, рассказы или сценарий', w: { word: 1 } },
+        { t: 'Маленький бизнес, который начнёт приносить деньги', w: { biz: 1 } },
+        { t: 'Свой сайт, приложение или полезный инструмент', w: { make: 1 } }
+      ] },
+
+    /* ---------- Как тебе удобнее: предпочтения, которые сдвигают оценку направлений ---------- */
+    { id: 'people', sec: 'how', type: 'single',
+      text: 'Сколько общения с людьми ты хочешь в новом деле по сравнению с нынешней работой?',
+      options: [
+        { t: 'Больше: общение меня заряжает' },
+        { t: 'Примерно столько же' },
+        { t: 'Меньше: хочется больше тишины' },
+        { t: 'Почти без общения' }
+      ] },
+    { id: 'broken', sec: 'how', type: 'single',
+      text: 'В телефоне или в приложении что-то не работает, и непонятно почему. Многих это злит, и это нормально. А ты?',
+      options: [
+        { t: 'Мне даже интересно: пробую разные варианты, пока не получится' },
+        { t: 'Ищу инструкцию или видео и делаю по шагам' },
+        { t: 'Немного пробую, потом прошу кого-нибудь помочь' },
+        { t: 'Раздражаюсь и бросаю: техника не моё' }
+      ] },
+    { id: 'pace', sec: 'how', type: 'single',
+      text: 'Какая работа тебе приятнее?',
+      options: [
+        { t: 'Быстрая: сделала за вечер и сразу вижу результат' },
+        { t: 'Что-то среднее' },
+        { t: 'Долгая: неделю собираю большую вещь, и она наконец работает' }
+      ] },
+    { id: 'shape', sec: 'how', type: 'single',
+      text: 'А что из этого тебе ближе?',
+      options: [
+        { t: 'Придумать новое с чистого листа' },
+        { t: 'Взять готовое и довести до ума' },
+        { t: 'Проверить чужую работу и найти, что в ней не так' }
+      ] },
+    { id: 'sell', sec: 'how', type: 'single',
+      text: 'Чтобы зарабатывать на себя, придётся самой предлагать услуги незнакомым людям. Как тебе это?',
+      options: [
+        { t: 'Нормально: я умею предлагать и договариваться' },
+        { t: 'Непривычно, но готова научиться' },
+        { t: 'Очень не хочу: пусть лучше задачи приходят сами' }
+      ] },
+
+    /* ---------- Примерка: задачи направлений ---------- */
+    { id: 'vis1', sec: 'try', type: 'scale', track: 'vis',
+      text: 'Сделать для салона серию картинок для соцсетей: описываешь словами, нейросеть рисует, ты отбираешь лучшее и доводишь до ума.' },
+    { id: 'auto1', sec: 'try', type: 'scale', track: 'auto',
+      text: 'Настроить бота, который сам отвечает клиентам на частые вопросы и записывает их на удобное время.' },
+    { id: 'txt1', sec: 'try', type: 'scale', track: 'txt',
+      text: 'Вести соцсети небольшого бизнеса: вместе с нейросетью придумывать темы и писать посты.' },
+    { id: 'train1', sec: 'try', type: 'scale', track: 'train',
+      text: 'Проверять ответы нейросети: читать, находить ошибки и неточности, ставить оценки по инструкции.' },
+    { id: 'vibe1', sec: 'try', type: 'scale', track: 'vibe',
+      text: 'Сделать простой сайт, объясняя нейросети словами, что тебе нужно, и поправляя её, когда выходит не то.' },
+    { id: 'cons1', sec: 'try', type: 'scale', track: 'cons',
+      text: 'Расспросить владельца небольшого бизнеса, на что у него уходит время, и подобрать нейросети, которые это упростят.' },
+    { id: 'data1', sec: 'try', type: 'scale', track: 'data',
+      text: 'Разобраться в таблице с цифрами (продажи, клиенты) и с помощью нейросети найти, где бизнес теряет деньги.' },
+    { id: 'vis2', sec: 'try', type: 'scale', track: 'vis',
+      text: 'Собрать короткий рекламный ролик: придумать сценку, получить от нейросети кадры, смонтировать их с музыкой.' },
+    { id: 'auto2', sec: 'try', type: 'scale', track: 'auto',
+      text: 'Собрать из готовых блоков цепочку: пришла заявка, она попала в таблицу, клиенту ушло сообщение, тебе пришло напоминание.' },
+    { id: 'txt2', sec: 'try', type: 'scale', track: 'txt',
+      text: 'Взять скучное описание услуги и вместе с нейросетью переписать его так, чтобы человеку захотелось прийти.' },
+    { id: 'train2', sec: 'try', type: 'scale', track: 'train',
+      text: 'В спокойном темпе, в одиночку, делать много похожих заданий, где важны внимательность и аккуратность.' },
+    { id: 'vibe2', sec: 'try', type: 'scale', track: 'vibe',
+      text: 'Придумать и собрать свой маленький сервис: калькулятор цен, запись на услугу или трекер привычек.' },
+    { id: 'cons2', sec: 'try', type: 'scale', track: 'cons',
+      text: 'Провести для коллег мини-урок: показать, как нейросеть помогает в их работе.' },
+    { id: 'data2', sec: 'try', type: 'scale', track: 'data',
+      text: 'Понять, как нейросети устроены внутри, и понемногу учиться программировать.' },
+
+    /* ---------- Условия: в оценку не входят, дают пометки ---------- */
+    { id: 'time', sec: 'cond', type: 'single',
+      text: 'Сколько времени в неделю ты реально готова уделять учёбе?',
+      options: [
+        { t: 'До 3 часов' },
+        { t: '3–7 часов' },
+        { t: '7–15 часов' },
+        { t: 'Больше 15 часов' }
+      ] },
+    { id: 'device', sec: 'cond', type: 'single',
+      text: 'С чего ты будешь заниматься?',
+      options: [
+        { t: 'Только с телефона' },
+        { t: 'С телефона, иногда есть доступ к компьютеру' },
+        { t: 'У меня есть свой ноутбук или компьютер' }
+      ] },
+    { id: 'english', sec: 'cond', type: 'single',
+      text: 'Что из этого ты можешь сделать на английском?',
+      hint: 'Выбери самое сложное из того, что тебе по силам',
+      options: [
+        { t: 'Почти ничего' },
+        { t: 'Разобраться в кнопках и инструкции с переводчиком' },
+        { t: 'Понять обучающее видео или статью' },
+        { t: 'Переписываться с клиентом' }
+      ] },
+    { id: 'soon', sec: 'cond', type: 'single',
+      text: 'Когда тебе важно начать на этом зарабатывать?',
+      options: [
+        { t: 'Как можно скорее, за 1–3 месяца' },
+        { t: 'В течение полугода' },
+        { t: 'В течение года, я не тороплюсь' },
+        { t: 'Деньги здесь не главное' }
+      ] },
+    { id: 'month', sec: 'cond', type: 'single',
+      text: 'Какой месяц тебе ближе?',
+      options: [
+        { t: 'Доход каждый раз разный, зато сама выбираю, с кем и когда работать' },
+        { t: 'Доход одинаковый, зато задачи и график задаёт работодатель' },
+        { t: 'Основная работа остаётся, а новое дело занимает вечера и выходные' },
+        { t: 'Пока не знаю' }
+      ] },
+    { id: 'budget', sec: 'cond', type: 'single',
+      text: 'Готова ли ты платить за обучение и сервисы?',
+      options: [
+        { t: 'Нет, только бесплатное' },
+        { t: 'Немного, до 20 долларов в месяц' },
+        { t: 'Да, если пойму, что это окупится' }
+      ] },
+    { id: 'fear', sec: 'cond', type: 'multi', max: 3,
+      text: 'Что может тебя остановить?',
+      hint: 'Выбери до трёх вариантов',
+      options: [
+        { t: 'Окажется слишком сложно технически' },
+        { t: 'Не хватит времени и сил после работы' },
+        { t: 'Не найду клиентов или работу' },
+        { t: 'Быстро надоест' },
+        { t: 'Кажется, что начинать уже поздно' },
+        { t: 'Плохо знаю английский' },
+        { t: 'Запутаюсь и не пойму, с чего начать' },
+        { t: 'Неловко показывать свои работы другим' },
+        { t: 'Ничего из этого', solo: true }
+      ] },
+
+    /* ---------- Своими словами ---------- */
+    { id: 'o_wish', sec: 'own', type: 'text',
+      text: 'Если бы нейросеть могла взять на себя одно дело в твоей работе или жизни, что бы ты ей отдала?',
+      ph: 'Например: отвечать на одни и те же вопросы клиентов' },
+    { id: 'o_year', sec: 'own', type: 'text',
+      text: 'Что должно измениться в твоей жизни через год, чтобы ты сказала: «Получилось»?',
+      ph: 'Например: работаю из дома и зарабатываю не меньше, чем сейчас' }
+  ];
+
+  var TEXT_MAX = 400;
+  var NAME_MAX = 40;
+
+  /* ---------- Кодирование ответов в короткую строку ---------- */
+
+  function utf8ToB64url(str) {
+    var bytes;
+    if (typeof TextEncoder !== 'undefined') {
+      bytes = new TextEncoder().encode(str);
+    } else {
+      var esc = unescape(encodeURIComponent(str));
+      bytes = new Uint8Array(esc.length);
+      for (var k = 0; k < esc.length; k++) bytes[k] = esc.charCodeAt(k);
+    }
+    var bin = '';
+    for (var i = 0; i < bytes.length; i++) bin += String.fromCharCode(bytes[i]);
+    var b64 = (typeof btoa !== 'undefined') ? btoa(bin) : Buffer.from(bin, 'binary').toString('base64');
+    return b64.replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+  }
+
+  function b64urlToUtf8(s) {
+    var b64 = s.replace(/-/g, '+').replace(/_/g, '/');
+    while (b64.length % 4) b64 += '=';
+    var bin = (typeof atob !== 'undefined') ? atob(b64) : Buffer.from(b64, 'base64').toString('binary');
+    var bytes = new Uint8Array(bin.length);
+    for (var i = 0; i < bin.length; i++) bytes[i] = bin.charCodeAt(i);
+    if (typeof TextDecoder !== 'undefined') return new TextDecoder('utf-8').decode(bytes);
+    return decodeURIComponent(escape(bin));
+  }
+
+  /* FNV-1a, 6 шестнадцатеричных знаков: ловит обрезанный или испорченный код */
+  function checksum(s) {
+    var h = 0x811c9dc5;
+    for (var i = 0; i < s.length; i++) {
+      h ^= s.charCodeAt(i);
+      h = (h + ((h << 1) + (h << 4) + (h << 7) + (h << 8) + (h << 24))) >>> 0;
+    }
+    return ('00000000' + h.toString(16)).slice(-8).slice(0, 6);
+  }
+
+  function clip(s, n) {
+    s = String(s == null ? '' : s).replace(/\s+/g, ' ').trim();
+    return s.length > n ? s.slice(0, n) : s;
+  }
+
+  /* state: { name, answers: {id: value}, startedAt, finishedAt }
+     value: single -> индекс варианта, scale -> 1..5, multi -> [индексы], text -> строка */
+  function encode(state) {
+    var a = '', m = [], t = [];
+    var ans = state.answers || {};
+    QUESTIONS.forEach(function (q) {
+      var v = ans[q.id];
+      if (q.type === 'single') {
+        a += (typeof v === 'number' && v >= 0 && v < q.options.length) ? v.toString(36) : '-';
+      } else if (q.type === 'scale') {
+        a += (typeof v === 'number' && v >= 1 && v <= 5) ? String(v) : '-';
+      } else if (q.type === 'multi') {
+        var mask = 0;
+        (Array.isArray(v) ? v : []).forEach(function (i) {
+          if (i >= 0 && i < q.options.length) mask |= (1 << i);
+        });
+        m.push(mask.toString(36));
+      } else if (q.type === 'text') {
+        t.push(clip(v, TEXT_MAX));
+      }
+    });
+    var payload = { v: VERSION, n: clip(state.name, NAME_MAX), a: a, m: m, t: t };
+    if (state.finishedAt) payload.d = Math.round(state.finishedAt / 60000);
+    if (state.startedAt && state.finishedAt) {
+      payload.s = Math.max(0, Math.round((state.finishedAt - state.startedAt) / 1000));
+    }
+    var body = utf8ToB64url(JSON.stringify(payload));
+    return PREFIX + '.' + body + '.' + checksum(body);
+  }
+
+  /* Принимает код или целое сообщение, в котором он есть.
+     Возвращает { ok, state } или { ok: false, error }. */
+  function decode(input) {
+    var raw = String(input || '').replace(/\s+/g, '');
+    var re = /NS(\d+)\.([A-Za-z0-9_-]+)\.([0-9a-f]{6})/;
+    var mt = re.exec(raw);
+    if (!mt) {
+      if (/NS\d+\./.test(raw)) return { ok: false, error: 'cut' };
+      return { ok: false, error: 'none' };
+    }
+    if (Number(mt[1]) !== VERSION) return { ok: false, error: 'version' };
+    if (checksum(mt[2]) !== mt[3]) return { ok: false, error: 'cut' };
+    var p;
+    try { p = JSON.parse(b64urlToUtf8(mt[2])); } catch (e) { return { ok: false, error: 'cut' }; }
+    if (!p || typeof p.a !== 'string') return { ok: false, error: 'cut' };
+
+    var answers = {};
+    var ai = 0, mi = 0, ti = 0;
+    QUESTIONS.forEach(function (q) {
+      if (q.type === 'single' || q.type === 'scale') {
+        var ch = p.a.charAt(ai++);
+        if (ch && ch !== '-') {
+          var num = parseInt(ch, 36);
+          if (q.type === 'single' && num < q.options.length) answers[q.id] = num;
+          if (q.type === 'scale' && num >= 1 && num <= 5) answers[q.id] = num;
+        }
+      } else if (q.type === 'multi') {
+        var mask = parseInt((p.m || [])[mi++] || '0', 36) || 0;
+        var picked = [];
+        for (var i = 0; i < q.options.length; i++) if (mask & (1 << i)) picked.push(i);
+        if (picked.length) answers[q.id] = picked;
+      } else if (q.type === 'text') {
+        var s = (p.t || [])[ti++];
+        if (s) answers[q.id] = String(s);
+      }
+    });
+    return {
+      ok: true,
+      state: {
+        name: p.n ? String(p.n) : '',
+        answers: answers,
+        finishedAt: p.d ? p.d * 60000 : null,
+        durationSec: typeof p.s === 'number' ? p.s : null
+      }
+    };
+  }
+
+  function isAnswered(q, v) {
+    if (q.type === 'single') return typeof v === 'number';
+    if (q.type === 'scale') return typeof v === 'number';
+    if (q.type === 'multi') return Array.isArray(v) && v.length > 0;
+    if (q.type === 'text') return typeof v === 'string' && v.trim().length > 0;
+    return false;
+  }
+
+  /* Ответ словами: для отчёта и списка «все ответы» */
+  function answerText(q, v) {
+    if (!isAnswered(q, v)) return '';
+    if (q.type === 'single') return q.options[v].t;
+    if (q.type === 'scale') return v + ' из 5, «' + SCALE[v - 1].t + '»';
+    if (q.type === 'multi') return v.map(function (i) { return q.options[i].t; }).join('; ');
+    return String(v);
+  }
+
+  var api = {
+    VERSION: VERSION, PREFIX: PREFIX,
+    TRAITS: TRAITS, SECTIONS: SECTIONS, SCALE: SCALE, SCALE_PROMPT: SCALE_PROMPT,
+    QUESTIONS: QUESTIONS, TEXT_MAX: TEXT_MAX, NAME_MAX: NAME_MAX,
+    encode: encode, decode: decode, checksum: checksum,
+    isAnswered: isAnswered, answerText: answerText
+  };
+
+  if (typeof module !== 'undefined' && module.exports) module.exports = api;
+  else root.NS = api;
+})(typeof window !== 'undefined' ? window : this);
+</script>
+<script>
+(function () {
+  'use strict';
+  var NS = window.NS;
+  var Q = NS.QUESTIONS;
+  var TOTAL = Q.length;
+  var KEY = 'ns-opros-v' + NS.VERSION;
+  var MINUTES = 10;
+
+  var inFrame = (function () { try { return window.self !== window.top; } catch (e) { return true; } })();
+
+  /* ---------- Шаги: старт, заставки разделов, вопросы, финал ---------- */
+  var secIds = [];
+  Q.forEach(function (q) { if (secIds.indexOf(q.sec) < 0) secIds.push(q.sec); });
+  var steps = [{ kind: 'start' }];
+  var prevSec = null;
+  Q.forEach(function (q, i) {
+    if (q.sec !== prevSec) {
+      prevSec = q.sec;
+      steps.push({ kind: 'section', sec: q.sec, no: secIds.indexOf(q.sec) + 1, before: i });
+    }
+    steps.push({ kind: 'q', q: q, n: i + 1 });
+  });
+  steps.push({ kind: 'finish' });
+
+  /* ---------- Состояние ---------- */
+  function blank() {
+    return { name: '', answers: {}, pos: 0, startedAt: null, finishedAt: null,
+             seed: Math.floor(Math.random() * 2147483647) };
+  }
+  function load() {
+    try {
+      var raw = window.localStorage.getItem(KEY);
+      if (!raw) return null;
+      var s = JSON.parse(raw);
+      if (!s || typeof s !== 'object' || !s.answers) return null;
+      if (typeof s.pos !== 'number' || s.pos < 0 || s.pos >= steps.length) s.pos = 0;
+      return s;
+    } catch (e) { return null; }
+  }
+  function save() {
+    try { window.localStorage.setItem(KEY, JSON.stringify(state)); } catch (e) { /* без хранилища тоже работаем */ }
+  }
+  var saved = load();
+  var state = saved || blank();
+  var resumePos = state.pos;
+  state.pos = 0;
+  var dir = 'fwd';
+  var pending = null;
+
+  /* ---------- Мелкие помощники ---------- */
+  function el(tag, attrs, kids) {
+    var node = document.createElement(tag);
+    if (attrs) Object.keys(attrs).forEach(function (k) {
+      var v = attrs[k];
+      if (v == null || v === false) return;
+      if (k === 'class') node.className = v;
+      else if (k === 'text') node.textContent = v;
+      else if (k.slice(0, 2) === 'on') node.addEventListener(k.slice(2), v);
+      else node.setAttribute(k, v === true ? '' : v);
+    });
+    (kids || []).forEach(function (c) { if (c) node.appendChild(typeof c === 'string' ? document.createTextNode(c) : c); });
+    return node;
+  }
+  function plural(n, one, few, many) {
+    var a = n % 100, b = n % 10;
+    if (a > 10 && a < 20) return many;
+    if (b === 1) return one;
+    if (b >= 2 && b <= 4) return few;
+    return many;
+  }
+  /* Порядок вариантов в ситуациях перемешан, чтобы первый в списке не выбирался чаще.
+     Перестановка зависит от seed и вопроса, поэтому при возврате назад порядок тот же. */
+  function shuffled(n, salt) {
+    var s = (state.seed || 1) >>> 0;
+    for (var c = 0; c < salt.length; c++) s = (Math.imul(s ^ salt.charCodeAt(c), 2654435761) >>> 0);
+    function rnd() {
+      s = (s + 0x6D2B79F5) >>> 0;
+      var t = Math.imul(s ^ (s >>> 15), 1 | s);
+      t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+      return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+    }
+    var order = [];
+    for (var i = 0; i < n; i++) order.push(i);
+    for (var j = n - 1; j > 0; j--) {
+      var k = Math.floor(rnd() * (j + 1));
+      var tmp = order[j]; order[j] = order[k]; order[k] = tmp;
+    }
+    return order;
+  }
+  function sectionNote(secId) {
+    var n = Q.filter(function (q) { return q.sec === secId; }).length;
+    return NS.SECTIONS[secId].note
+      .replace('{q}', n + ' ' + plural(n, 'вопрос', 'вопроса', 'вопросов'))
+      .replace('{t}', n + ' ' + plural(n, 'задача', 'задачи', 'задач'));
+  }
+  function answeredCount() {
+    return Q.filter(function (q) { return NS.isAnswered(q, state.answers[q.id]); }).length;
+  }
+  function firstGap() {      /* первый шаг-вопрос с обязательным, но пустым ответом */
+    for (var i = 0; i < steps.length; i++) {
+      var s = steps[i];
+      if (s.kind === 'q' && s.q.type !== 'text' && !NS.isAnswered(s.q, state.answers[s.q.id])) return i;
+    }
+    return -1;
+  }
+
+  /* ---------- Лента ---------- */
+  var top = document.getElementById('top');
+  var tape = document.getElementById('tape');
+  var countEl = document.getElementById('count');
+  var backBtn = document.getElementById('back');
+  (function buildTape() {
+    ['tape-rest', 'tape-fill'].forEach(function (id) {
+      var layer = document.getElementById(id);
+      for (var k = 1; k < TOTAL; k++) {
+        var tick = document.createElement('i');
+        if (k % 5 === 0) tick.className = 'five';
+        tick.style.left = (k / TOTAL * 100) + '%';
+        layer.appendChild(tick);
+        if (k % 5 === 0) {
+          var num = document.createElement('b');
+          num.textContent = String(k);
+          num.style.left = (k / TOTAL * 100) + '%';
+          layer.appendChild(num);
+        }
+      }
+    });
+    tape.setAttribute('aria-valuemax', String(TOTAL));
+  })();
+  function setTape(done) {
+    tape.style.setProperty('--p', String(Math.round(done / TOTAL * 1000) / 10));
+    tape.setAttribute('aria-valuenow', String(done));
+  }
+
+  /* ---------- Переходы ---------- */
+  function go(pos, direction) {
+    if (pending) { window.clearTimeout(pending); pending = null; }
+    dir = direction || (pos < state.pos ? 'back' : 'fwd');
+    state.pos = Math.max(0, Math.min(steps.length - 1, pos));
+    if (steps[state.pos].kind === 'finish') state.finishedAt = Date.now();
+    save();
+    render();
+  }
+  function next() { go(state.pos + 1, 'fwd'); }
+  function prev() { go(state.pos - 1, 'back'); }
+  backBtn.addEventListener('click', prev);
+
+  /* ---------- Экраны ---------- */
+  var stage = document.getElementById('stage');
+
+  function render() {
+    var step = steps[state.pos];
+    var screen = el('div', { 'class': 'screen ' + (dir === 'back' ? 'back-dir' : 'fwd') });
+    if (step.kind === 'start') renderStart(screen);
+    else if (step.kind === 'section') renderSection(screen, step);
+    else if (step.kind === 'q') renderQuestion(screen, step);
+    else renderFinish(screen);
+
+    top.hidden = step.kind === 'start';
+    if (step.kind === 'q') { setTape(step.n - 1); countEl.textContent = 'Вопрос ' + step.n + ' из ' + TOTAL; }
+    else if (step.kind === 'section') { setTape(step.before); countEl.textContent = ''; }
+    else if (step.kind === 'finish') { setTape(TOTAL); countEl.textContent = 'Готово'; }
+
+    stage.textContent = '';
+    stage.appendChild(screen);
+    window.scrollTo(0, 0);
+    var head = screen.querySelector('[data-head]');
+    if (head && step.kind !== 'start') { head.setAttribute('tabindex', '-1'); head.focus({ preventScroll: true }); }
+  }
+
+  function renderStart(screen) {
+    var nameInput = el('input', { 'class': 'input', id: 'name', type: 'text', maxlength: String(NS.NAME_MAX),
+      autocomplete: 'given-name', placeholder: 'Имя', value: state.name || '' });
+    nameInput.addEventListener('input', function () { state.name = nameInput.value; save(); });
+    function begin(pos) {
+      state.name = nameInput.value.trim();
+      if (!state.startedAt) state.startedAt = Date.now();
+      go(pos, 'fwd');
+    }
+    var hasProgress = saved && answeredCount() > 0 && resumePos > 0;
+
+    screen.appendChild(el('h1', { text: 'Примерка нейросетей', 'data-head': true }));
+    screen.appendChild(el('p', { 'class': 'lead',
+      text: 'Нейросети — это не одна профессия, а десяток разных занятий. Кому-то ближе картинки и видео, кому-то тексты, кому-то боты и автоматизация. Здесь можно прикинуть, что из этого подойдёт тебе.' }));
+    screen.appendChild(el('ul', { 'class': 'facts' }, [
+      el('li', { text: TOTAL + ' ' + plural(TOTAL, 'вопрос', 'вопроса', 'вопросов') + ', около ' + MINUTES + ' минут. Можно прерваться и вернуться: ответы сохраняются.' }),
+      el('li', { text: 'Знать что-то о нейросетях не нужно.' }),
+      el('li', { text: 'Правильных ответов нет. Отвечай как есть, а не как «надо», тогда результат будет про тебя.' })
+    ]));
+    screen.appendChild(el('hr', { 'class': 'stitch' }));
+    screen.appendChild(el('div', { 'class': 'field' }, [
+      el('label', { 'for': 'name', text: 'Как тебя зовут?' }),
+      nameInput
+    ]));
+    if (hasProgress) {
+      var n = answeredCount();
+      screen.appendChild(el('div', { 'class': 'actions' }, [
+        el('button', { type: 'button', 'class': 'btn', text: 'Продолжить', onclick: function () { begin(resumePos); } }),
+        el('button', { type: 'button', 'class': 'btn quiet', text: 'Начать заново', onclick: function () {
+          var keep = nameInput.value;
+          state = blank(); state.name = keep; saved = null; resumePos = 0; save(); begin(1);
+        } })
+      ]));
+      screen.appendChild(el('p', { 'class': 'muted small',
+        text: 'Ты уже ответила на ' + n + ' ' + plural(n, 'вопрос', 'вопроса', 'вопросов') + ' из ' + TOTAL + '.' }));
+    } else {
+      screen.appendChild(el('div', { 'class': 'actions' }, [
+        el('button', { type: 'button', 'class': 'btn', text: 'Начать', onclick: function () { begin(1); } })
+      ]));
+    }
+    screen.appendChild(el('p', { 'class': 'muted small',
+      text: 'В конце ты отправишь ответы тому, кто дал тебе этот опросник, и вы вместе разберёте, с чего начать. До этого ответы остаются только на твоём устройстве.' }));
+  }
+
+  function renderSection(screen, step) {
+    var sec = NS.SECTIONS[step.sec];
+    screen.appendChild(el('p', { 'class': 'part', text: 'Часть ' + step.no + ' из ' + secIds.length }));
+    screen.appendChild(el('h2', { text: sec.title, 'data-head': true }));
+    screen.appendChild(el('hr', { 'class': 'stitch' }));
+    var note = sectionNote(step.sec);
+    screen.appendChild(el('p', { 'class': 'lead', text: note.charAt(0).toUpperCase() + note.slice(1) }));
+    screen.appendChild(el('div', { 'class': 'actions' }, [
+      el('button', { type: 'button', 'class': 'btn', text: 'Дальше', onclick: next })
+    ]));
+  }
+
+  function renderQuestion(screen, step) {
+    var q = step.q;
+    var value = state.answers[q.id];
+    var headKids = [el('p', { 'class': 'q-sec', text: NS.SECTIONS[q.sec].title })];
+    var title = el('h2', { 'class': 'q-text' + (q.text.length > 105 ? ' long' : ''), text: q.text, 'data-head': true });
+    headKids.push(title);
+    if (q.type === 'scale') headKids.push(el('p', { 'class': 'q-prompt', text: NS.SCALE_PROMPT }));
+    if (q.hint) headKids.push(el('p', { 'class': 'muted small', text: q.hint }));
+    screen.appendChild(el('div', { 'class': 'q-head' }, headKids));
+
+    if (q.type === 'single' || q.type === 'scale') {
+      var items = q.type === 'single'
+        ? q.options.map(function (o, i) { return { v: i, t: o.t }; })
+        : NS.SCALE.map(function (s) { return { v: s.v, t: s.t, meter: s.v }; });
+      if (q.shuffle) items = shuffled(items.length, q.id).map(function (i) { return items[i]; });
+      var list = el('div', { 'class': 'opts' });
+      var buttons = [];
+      items.forEach(function (it) {
+        var kids = [];
+        if (it.meter) {
+          var meter = el('span', { 'class': 'meter', 'aria-hidden': 'true' });
+          for (var k = 1; k <= 5; k++) {
+            var bar = el('span', { 'class': k <= it.meter ? 'on' : '' });
+            bar.style.height = (4 + k * 2.8) + 'px';
+            meter.appendChild(bar);
+          }
+          kids.push(meter);
+        }
+        kids.push(el('span', { 'class': 'opt-label', text: it.t }));
+        var b = el('button', { type: 'button', 'class': 'opt', 'aria-pressed': value === it.v ? 'true' : 'false' }, kids);
+        b.addEventListener('click', function () {
+          state.answers[q.id] = it.v;
+          save();
+          buttons.forEach(function (x) { x.setAttribute('aria-pressed', x === b ? 'true' : 'false'); });
+          if (pending) window.clearTimeout(pending);
+          pending = window.setTimeout(function () { pending = null; next(); }, 260);
+        });
+        buttons.push(b);
+        list.appendChild(b);
+      });
+      screen.appendChild(list);
+      if (NS.isAnswered(q, value)) {
+        screen.appendChild(el('div', { 'class': 'actions' }, [
+          el('button', { type: 'button', 'class': 'btn', text: 'Дальше', onclick: next })
+        ]));
+      }
+    } else if (q.type === 'multi') {
+      var picked = Array.isArray(value) ? value.slice() : [];
+      var mlist = el('div', { 'class': 'opts' });
+      var mbuttons = [];
+      var nextBtn = el('button', { type: 'button', 'class': 'btn', text: 'Дальше', onclick: next });
+      function sync() {
+        mbuttons.forEach(function (b, i) { b.setAttribute('aria-pressed', picked.indexOf(i) >= 0 ? 'true' : 'false'); });
+        nextBtn.disabled = picked.length === 0;
+        if (picked.length) state.answers[q.id] = picked.slice(); else delete state.answers[q.id];
+        save();
+      }
+      q.options.forEach(function (o, i) {
+        var b = el('button', { type: 'button', 'class': 'opt' }, [
+          el('span', { 'class': 'box', 'aria-hidden': 'true' }),
+          el('span', { 'class': 'opt-label', text: o.t })
+        ]);
+        b.addEventListener('click', function () {
+          var at = picked.indexOf(i);
+          if (at >= 0) picked.splice(at, 1);
+          else if (o.solo) picked = [i];
+          else {
+            picked = picked.filter(function (j) { return !q.options[j].solo; });
+            picked.push(i);
+            while (picked.length > q.max) picked.shift();   /* сверх лимита снимаем самый ранний выбор */
+          }
+          sync();
+        });
+        mbuttons.push(b);
+        mlist.appendChild(b);
+      });
+      screen.appendChild(mlist);
+      screen.appendChild(el('div', { 'class': 'actions' }, [nextBtn]));
+      sync();
+    } else {
+      var area = el('textarea', { 'class': 'area', id: 'answer-' + q.id, maxlength: String(NS.TEXT_MAX),
+        placeholder: q.ph || '', 'aria-label': q.text });
+      area.value = typeof value === 'string' ? value : '';
+      var counter = el('span', { 'class': 'counter muted small' });
+      var goBtn = el('button', { type: 'button', 'class': 'btn', onclick: next });
+      function syncText() {
+        var v = area.value;
+        if (v.trim()) state.answers[q.id] = v; else delete state.answers[q.id];
+        counter.textContent = v.length + ' из ' + NS.TEXT_MAX;
+        goBtn.textContent = v.trim() ? 'Дальше' : 'Пропустить';
+        save();
+      }
+      area.addEventListener('input', syncText);
+      screen.appendChild(el('div', { 'class': 'field' }, [area, counter]));
+      screen.appendChild(el('div', { 'class': 'actions' }, [goBtn]));
+      syncText();
+    }
+  }
+
+  function renderFinish(screen) {
+    var gap = firstGap();
+    if (gap >= 0) {
+      screen.appendChild(el('h2', { text: 'Остался вопрос без ответа', 'data-head': true }));
+      screen.appendChild(el('p', { 'class': 'lead', text: 'Без него картина будет неполной. Это быстро.' }));
+      screen.appendChild(el('div', { 'class': 'actions' }, [
+        el('button', { type: 'button', 'class': 'btn', text: 'Ответить', onclick: function () { go(gap, 'back'); } })
+      ]));
+      return;
+    }
+
+    var code = NS.encode(state);
+    var name = (state.name || '').trim();
+    var message = 'Мои ответы на опросник про нейросети' + (name ? '\nИмя: ' + name : '') + '\n\nКод ответов:\n' + code;
+
+    var status = el('p', { 'class': 'status', role: 'status', 'aria-live': 'polite' });
+    var box = el('textarea', { 'class': 'area msg', id: 'message', readonly: true, 'aria-label': 'Сообщение с ответами' });
+    box.value = message;
+    function say(text, isErr) { status.textContent = text; status.className = 'status' + (isErr ? ' err' : ''); }
+    function selectBox() { box.focus(); box.select(); try { box.setSelectionRange(0, message.length); } catch (e) { /* не везде есть */ } }
+    function copied() { say('Скопировано. Открой чат и вставь сообщение.'); }
+    function copyFailed() { selectBox(); say('Не получилось скопировать автоматически. Текст ниже выделен: скопируй его вручную.', true); }
+    function copy() {
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(message).then(copied, function () { legacyCopy(); });
+      } else legacyCopy();
+    }
+    function legacyCopy() {
+      selectBox();
+      var ok = false;
+      try { ok = document.execCommand('copy'); } catch (e) { ok = false; }
+      if (ok) copied(); else copyFailed();
+    }
+
+    screen.appendChild(el('h2', { text: 'Готово, спасибо!', 'data-head': true }));
+    screen.appendChild(el('p', { 'class': 'lead',
+      text: 'Осталось отправить ответы тому, кто дал тебе этот опросник. Вместе вы разберёте, с чего тебе лучше начать.' }));
+    screen.appendChild(el('hr', { 'class': 'stitch' }));
+
+    var send = el('div', { 'class': 'send' });
+    var canShare = !inFrame && typeof navigator.share === 'function';
+    if (canShare) {
+      send.appendChild(el('button', { type: 'button', 'class': 'btn wide', text: 'Отправить ответы', onclick: function () {
+        navigator.share({ text: message }).then(function () { say('Сообщение передано в выбранное приложение.'); },
+          function (err) { if (!err || err.name !== 'AbortError') copy(); });
+      } }));
+    }
+    send.appendChild(el('button', { type: 'button', 'class': 'btn wide' + (canShare ? ' quiet' : ''), text: 'Скопировать ответы', onclick: copy }));
+    send.appendChild(el('a', { 'class': 'btn quiet wide', target: '_blank', rel: 'noopener',
+      href: 'https://t.me/share/url?url=' + encodeURIComponent(code) + '&text=' + encodeURIComponent('Мои ответы на опросник про нейросети' + (name ? ', ' + name : '')),
+      text: 'Открыть Telegram' }));
+    send.appendChild(el('a', { 'class': 'btn quiet wide', target: '_blank', rel: 'noopener',
+      href: 'https://wa.me/?text=' + encodeURIComponent(message), text: 'Открыть WhatsApp' }));
+    if (!inFrame) {
+      send.appendChild(el('button', { type: 'button', 'class': 'btn quiet wide', text: 'Скачать файлом', onclick: function () {
+        try {
+          var blob = new Blob([message + '\n'], { type: 'text/plain;charset=utf-8' });
+          var url = URL.createObjectURL(blob);
+          var a = el('a', { href: url, download: 'otvety-neiroseti.txt' });
+          document.body.appendChild(a); a.click(); a.remove();
+          window.setTimeout(function () { URL.revokeObjectURL(url); }, 2000);
+          say('Файл сохранён. Отправь его в чат.');
+        } catch (e) { copyFailed(); }
+      } }));
+    }
+    screen.appendChild(send);
+    screen.appendChild(status);
+    screen.appendChild(el('div', { 'class': 'field' }, [
+      el('label', { 'for': 'message', 'class': 'muted small', text: 'Это сообщение уйдёт в чат. Длинная строка в конце — твои ответы в сжатом виде.' }),
+      box
+    ]));
+    screen.appendChild(el('button', { type: 'button', 'class': 'linkish', text: 'Вернуться и поправить ответы', onclick: prev }));
+  }
+
+  render();
+})();
+</script>
+</body>
+</html>
